@@ -13,22 +13,22 @@ Had to move about 6 of them.
 Also turns out that some are blank, and some are too short at 10K word resolution of the sliding window.
 
 \begin{verbatim}
-  mv raw/48-Hrs{-,}.txt 
+  mv raw/48-Hrs{-,}.txt
 
   root@bicentennial:/usr/share/nginx/data/moviedata# ls raw/Austin
   ls: cannot access raw/Austin: No such file or directory
   root@bicentennial:/usr/share/nginx/data/moviedata# ls raw/Austin*
   raw/Austin-Powers---International-Man-of-Mystery.txt  raw/Austin-Powers---The-Spy-Who-Shagged-Me.txt
-  root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/Austin-Powers-{--,}The-Spy-Who-Shagged-Me.txt 
-  root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/Austin-Powers-{--,}International-Man-of-Mystery.txt 
+  root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/Austin-Powers-{--,}The-Spy-Who-Shagged-Me.txt
+  root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/Austin-Powers-{--,}International-Man-of-Mystery.txt
   root@bicentennial:/usr/share/nginx/data/moviedata# ls raw/E-*
   raw/E-T-.txt
   root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/E-T{-,}.txt
   root@bicentennial:/usr/share/nginx/data/moviedata# ls raw/Escape-From-*
   raw/Escape-From-L-A-.txt  raw/Escape-From-New-York.txt
-  root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/Escape-From-L-A{-,}.txt 
+  root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/Escape-From-L-A{-,}.txt
   root@bicentennial:/usr/share/nginx/data/moviedata# ls raw/Maj
-  Majestic,-The-(The-Bijou).txt  Major-League.txt               
+  Majestic,-The-(The-Bijou).txt  Major-League.txt
   root@bicentennial:/usr/share/nginx/data/moviedata# ls raw/Majestic*
   raw/Majestic,-The-(The-Bijou).txt
   root@bicentennial:/usr/share/nginx/data/moviedata# mv raw/Majestic\,-The-\(The-Bijou\).txt raw/Majestic-\(The-Bijou\)\,-The.txt
@@ -245,9 +245,9 @@ Specific things to fix: (note the double space)
 \([a-zA-Z ]+\), The -> The \1
 \([a-zA-Z ]+\), A -> A \1
 remove apostrophes:
-' -> 
+' ->
 remove dots (replace with nothing)
-. -> 
+. ->
   ->
 Fix this one:
 L Avventura (The Adventure)
@@ -275,7 +275,7 @@ You've-Got-Mail.html
 
 Have to move this guy by hand:
 
-mv rawer-take2/redownload/Who-Framed-Roger-Rabbit\?.html rawer-take2/redownload/Who-Framed-Roger-Rabbit%3f.html 
+mv rawer-take2/redownload/Who-Framed-Roger-Rabbit\?.html rawer-take2/redownload/Who-Framed-Roger-Rabbit%3f.html
 
 Fixed "there's something about mary" by hand, reran clean.sh, and clean-pass2.sh.
 
@@ -313,6 +313,3 @@ Part of the chopmovies.py script is a for loop that will ping the API, I think t
 The open database has info that I don't have saved in the database models, but the actor/director info isn't as good, so try to finish with the apathetic API first, then I'll go back and add the IMDB rating (e.g., 7.2/10), number of reviews from users info.
 http://www.omdbapi.com/
 
-
-
-# movie-hedonometer
