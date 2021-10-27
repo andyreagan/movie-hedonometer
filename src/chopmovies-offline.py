@@ -1,7 +1,7 @@
 # chop.py
 #
 # chop up a text into a bunch of frequency vectors of length
-# 
+#
 # USAGE
 #
 # python chop.py data/count-of-monte-cristo.txt output french
@@ -36,13 +36,13 @@ def chopper(words,labMT,labMTvector,outfile,minSize=1000):
     textValence,textFvec = emotion(chunk,labMT,shift=True,happsList=labMTvector)
       # print chunk
     # print 'the valence of {0} part {1} is {2}'.format(rawbook,i,textValence)
-        
+
     allFvec.append(textFvec)
 
 
   f = open(outfile,"w")
   if len(allFvec) > 0:
-    print "writing out the file to {0}".format(outfile) 
+    print "writing out the file to {0}".format(outfile)
     f.write('{0:.0f}'.format(allFvec[0][0]))
     for k in xrange(1,len(allFvec)):
       f.write(',{0:.0f}'.format(allFvec[k][0]))
@@ -89,7 +89,7 @@ def precomputeTimeseries(fullVec,labMT,labMTvector,outfile):
     timeseries[i-minWindows/2] = emotionV(stoppedVec,labMTvector)
     # print "removing point {0}".format(i-minWindows)
     textFvec = [textFvec[j]-fullVec[j][i-minWindows] for j in xrange(len(fullVec))]
-    
+
   # print "done"
 
   # print timeseries[0:11]
@@ -108,7 +108,7 @@ def renameThe(folder):
   query = Movie.objects.all()
   for movie in query:
     filename = movie.filename # .replace(" ","-")
-    correctname = filename    
+    correctname = filename
     if filename[0:4] == "The-":
       wrongname = filename[4:]+",-The"
     if filename[0:4] == "A-":
@@ -176,7 +176,7 @@ def checkClean(folder):
       #     subprocess.call("wget http://www.imsdb.com/scripts/"+messytitle.replace("'","\'"),shell=True)
       #   except:
       #     print "wget http://www.imsdb.com/scripts/"+messytitle.replace("'","\'").replace("&","\&")
-        
+
   f.close()
   g.close()
 
@@ -235,7 +235,7 @@ def process():
         movie.excludeReason = "Unknown"
         movie.save()
       f.close()
-    
+
       words = [x.lower() for x in re.findall(r"[\w\@\#\'\&\]\*\-\/\[\=\;]+",raw_text_clean,flags=re.UNICODE)]
       lines = raw_text.split("\n")
       kwords = []
@@ -245,7 +245,7 @@ def process():
           tmpwords = [x.lower() for x in re.findall(r"[\w\@\#\'\&\]\*\-\/\[\=\;]+",lines[i],flags=re.UNICODE)]
           kwords.extend(tmpwords)
           klines.extend([i for j in xrange(len(tmpwords))])
-          
+
       # avhapps = emotion(raw_text,labMT)
       print "length of the original parse"
       print len(words)
@@ -271,7 +271,7 @@ def process():
         f = open("word-vectors/"+str(window)+"/"+movie.filename+".csv","r")
         fullVec = [map(int,line.split(",")) for line in f]
         f.close()
-  
+
         # some movies are blank
         if len(fullVec) > 0:
           if len(fullVec[0]) > 9:
@@ -292,7 +292,7 @@ def process():
       u.write("missing file at ")
       u.write("/usr/share/nginx/data/moviedata/scriptsClean/"+titleraw.replace(" ","-")+".txt")
       u.write("\n")
-      
+
   u.close()
 
 def dictify(words,wordDict):
@@ -323,7 +323,7 @@ def process_overallHapps():
     lines = raw_text.split("\n")
 
     # alltext += raw_text + " "
-    
+
     kwords = []
     klines = []
     for i in xrange(len(lines)):
@@ -331,13 +331,13 @@ def process_overallHapps():
         tmpwords = [x.lower() for x in re.findall(r"[\w\@\#\'\&\]\*\-\/\[\=\;]+",lines[i],flags=re.UNICODE)]
         kwords.extend(tmpwords)
         klines.extend([i for j in xrange(len(tmpwords))])
-          
+
     print("length of the new parse")
     print(len(kwords))
     # not building up a dict anymore, just adding the freq vectors
     # when not saving out the word vectors
     # dictify(kwords,alltext_dict)
-    
+
     rawtext = " ".join(kwords)
 
     textValence,textFvec = emotion(rawtext,labMT,shift=True,happsList=labMTvector)
@@ -362,16 +362,16 @@ def process_overallHapps():
     stoppedVec = stopper(textFvec,labMTvector,labMTwordList,stopVal=2.0,ignore=ignoreWords)
     happs = emotionV(stoppedVec,labMTvector)
     print(happs)
-    
+
     movie.length = len(kwords)
     movie.happs = happs
     movie.save()
-    
+
   # print("now computing for the full thing")
   # # go compute the happs of all the movies mashed together
   # textValence = labMTsenti.scoreTrie(alltext_dict)
   # textFvec = labMTsenti.wordVecifyTrieDict(alltext_dict)
-  
+
   stoppedVec = stopper(alltext_labMT_fVec,labMTvector,labMTwordList,stopVal=2.0,ignore=ignoreWords)
   happs = emotionV(stoppedVec,labMTvector)
   # print(textValence)
@@ -412,7 +412,7 @@ def testRE():
       f = codecs.open("scriptsClean/"+filename+".txt","r","utf8")
       raw_text = f.read()
       f.close()
-    
+
       words = [x.lower() for x in re.findall(r"[\w\@\#\'\&\]\*\-\/\[\=\;]+",raw_text,flags=re.UNICODE)]
 
       print len(words)
@@ -457,8 +457,8 @@ def fixModels():
   print len(Movie.objects.all())
   print len(titles)
   print len(missing)
-  
-  
+
+
 if __name__ == "__main__":
   # will rename all of the files in raw, rawer
   folder = 'rawer-take2'
@@ -493,7 +493,7 @@ if __name__ == "__main__":
   #     print("found raw file")
   #     # print "opening raw/"+filename+".html.clean04"
   #     # try:
-  #     #   f = codecs.open("raw/"+filename+".html.clean04","r","utf8")      
+  #     #   f = codecs.open("raw/"+filename+".html.clean04","r","utf8")
 
   # # check that the files all nonzero
   # movies = Movie.objects.all()
@@ -541,7 +541,7 @@ if __name__ == "__main__":
   #     # else:
   #     #     for i,line in enumerate(raw.split("\n")):
   #     #         if len(re.findall(r"<body.*?>",line,flags=re.IGNORECASE))>0:
-  #     #             print(raw.split("\n")[i:i+10])        
+  #     #             print(raw.split("\n")[i:i+10])
   #     if len(re.findall(r"scrtext",raw,flags=re.IGNORECASE))==0:
   #       # if "<body>" not in raw:
   #       print("didn't find scrtext")
@@ -636,7 +636,7 @@ if __name__ == "__main__":
   #     print("raw/"+m.filename+".txt.clean02")
   #     f = codecs.open("raw/"+m.filename+".txt.clean01","w","utf8")
   #     f.write(re.sub("  ([ ]*)","\n  \\1",script))
-  #     f.close()      
+  #     f.close()
   # print(sorted(lengths)[:40])
   # ind = sorted(range(len(movies)),key=lambda i:lengths[i])
   # sorted_movies = [(movies[i],lengths[i]) for i in ind]
@@ -645,7 +645,7 @@ if __name__ == "__main__":
   # some are all on one line:
   # American Outlaws, Made, Training Day
   # "fixed" with the above
-     
+
   # movies = Movie.objects.all()
   filenames = open("movie-title-list.txt","r").read().split("\n")
   for i in trange(len(filenames)):
@@ -690,7 +690,7 @@ if __name__ == "__main__":
         text = line_match[0][1].rstrip(" ")
         types[i] = "a"
         # lines[i] = space+text
-        
+
     # print(bold_spacings[:100])
     # print(np.mean(bold_spacings))
     # print(general_spacings[:100])
