@@ -114,20 +114,20 @@ def renameThe(folder):
     if filename[0:4] == "A-":
       wrongname = filename[4:]+",-A"
       # try:
-      #   shutil.copyfile("/usr/share/nginx/data/moviedata/rawer/"+wrongname+".html.end.beg","/usr/share/nginx/data/moviedata/rawer/"+correctname+".html.end.beg")
+      #   shutil.copyfile("data/scripts/rawer/"+wrongname+".html.end.beg","data/scripts/rawer/"+correctname+".html.end.beg")
       # except:
       #   print wrongname+" rawer .end.beg failed, copy manually"
       # try:
-      #   shutil.copyfile("/usr/share/nginx/data/moviedata/raw/"+wrongname+".txt","/usr/share/nginx/data/moviedata/raw/"+correctname+".txt")
+      #   shutil.copyfile("data/scripts/raw/"+wrongname+".txt","data/scripts/raw/"+correctname+".txt")
       # except:
       #   print wrongname+" raw failed, copy manually"
       # try:
-      #   shutil.copyfile("/usr/share/nginx/data/moviedata/rawer/"+wrongname+".html.clean01","/usr/share/nginx/data/moviedata/rawer/"+correctname+".html.clean01")
+      #   shutil.copyfile("data/scripts/rawer/"+wrongname+".html.clean01","data/scripts/rawer/"+correctname+".html.clean01")
       # except:
       #   print wrongname+" rawer clean01 failed, copy manually"
     if not correctname == wrongname:
       try:
-        shutil.move("/usr/share/nginx/data/moviedata/"+folder+"/"+wrongname+".html","/usr/share/nginx/data/moviedata/"+folder+"/"+correctname+".html")
+        shutil.move("data/scripts/"+folder+"/"+wrongname+".html","data/scripts/"+folder+"/"+correctname+".html")
       except:
         print wrongname+" in "+folder+"  failed, copy manually"
 
@@ -139,7 +139,7 @@ def renameFull(folder):
     print cleantitle
     messytitle = line.rstrip().replace(" ","-")+".html"
     print messytitle
-    shutil.move("/usr/share/nginx/data/moviedata/"+folder+"/"+messytitle,"/usr/share/nginx/data/moviedata/"+folder+"/"+cleantitle)
+    shutil.move("data/scripts/"+folder+"/"+messytitle,"data/scripts/"+folder+"/"+cleantitle)
   f.close()
   g.close()
 
@@ -150,7 +150,7 @@ def renameFullPass2(folder):
     cleantitle = g.readline().rstrip().replace(" ","-")+".html"
     messytitle = line.rstrip().replace(" ","-")+".html"
     try:
-      shutil.move("/usr/share/nginx/data/moviedata/"+folder+"/"+messytitle,"/usr/share/nginx/data/moviedata/"+folder+"/"+cleantitle)
+      shutil.move("data/scripts/"+folder+"/"+messytitle,"data/scripts/"+folder+"/"+cleantitle)
       print "renamed "+messytitle
     except:
       pass
@@ -160,18 +160,18 @@ def renameFullPass2(folder):
 def checkClean(folder):
   f = open('titles-raw.txt','r')
   g = open('titles-clean.txt','r')
-  if not os.path.isdir("/usr/share/nginx/data/moviedata/"+folder+"/redownload"):
-    os.mkdir("/usr/share/nginx/data/moviedata/"+folder+"/redownload")
+  if not os.path.isdir("data/scripts/"+folder+"/redownload"):
+    os.mkdir("data/scripts/"+folder+"/redownload")
   for line in f:
     cleantitle = g.readline().rstrip().replace(" ","-")+".html"
     messytitle = line.rstrip().replace(" ","-")+".html"
-    # shutil.move("/usr/share/nginx/data/moviedata/"+folder+"/"+messytitle,"/usr/share/nginx/data/moviedata/"+folder+"/"+cleantitle)
-    fsize = os.stat("/usr/share/nginx/data/moviedata/"+folder+"/"+cleantitle+".end.beg").st_size
+    # shutil.move("data/scripts/"+folder+"/"+messytitle,"data/scripts/"+folder+"/"+cleantitle)
+    fsize = os.stat("data/scripts/"+folder+"/"+cleantitle+".end.beg").st_size
     if fsize < 4000:
       print messytitle
-      # shutil.move("/usr/share/nginx/data/moviedata/"+messytitle,"/usr/share/nginx/data/moviedata/"+folder+"/redownload/"+messytitle)
+      # shutil.move("data/scripts/"+messytitle,"data/scripts/"+folder+"/redownload/"+messytitle)
       # use this the first time it is called to attempt to copy it down
-      # if not os.path.isfile("/usr/share/nginx/data/moviedata/"+folder+"/redownload/"+messytitle):
+      # if not os.path.isfile("data/scripts/"+folder+"/redownload/"+messytitle):
       #   try:
       #     subprocess.call("wget http://www.imsdb.com/scripts/"+messytitle.replace("'","\'"),shell=True)
       #   except:
@@ -199,7 +199,7 @@ def process():
     print "titleraw:"
     print titleraw
 
-    if os.path.isfile("/usr/share/nginx/data/moviedata/scriptsClean/"+titleraw.replace(" ","-").replace(".","-")+".txt"):
+    if os.path.isfile("data/scripts/scriptsClean/"+titleraw.replace(" ","-").replace(".","-")+".txt"):
       print "found file for title:"
       print movie.title
       print "opening scriptsClean/"+titleraw.replace(" ","-").replace(".","-")+".txt"
@@ -284,13 +284,13 @@ def process():
 
     else:
       print "movie does not have a file at:"
-      print "/usr/share/nginx/data/moviedata/scriptsClean/"+titleraw.replace(" ","-")+".txt"
+      print "data/scripts/scriptsClean/"+titleraw.replace(" ","-")+".txt"
       movie.exclude = True
       movie.excludeReason = "missing raw file in scriptsClean"
       u.write(movie.title)
       u.write("\n")
       u.write("missing file at ")
-      u.write("/usr/share/nginx/data/moviedata/scriptsClean/"+titleraw.replace(" ","-")+".txt")
+      u.write("data/scripts/scriptsClean/"+titleraw.replace(" ","-")+".txt")
       u.write("\n")
 
   u.close()
@@ -407,7 +407,7 @@ def testRE():
       filename = filename[4:]+",-The"
     # print filename
 
-    if os.path.isfile("/usr/share/nginx/data/moviedata/scriptsClean/"+filename+".txt"):
+    if os.path.isfile("data/scripts/scriptsClean/"+filename+".txt"):
       print movie.title
       f = codecs.open("scriptsClean/"+filename+".txt","r","utf8")
       raw_text = f.read()
@@ -418,10 +418,10 @@ def testRE():
       print len(words)
 
 def fixModels():
-  f = open("/usr/share/nginx/data/moviedata/titles-clean.txt","r")
+  f = open("data/scripts/titles-clean.txt","r")
   titles = [line.rstrip() for line in f]
   f.close()
-  f = open("/usr/share/nginx/data/moviedata/titles-raw.txt","r")
+  f = open("data/scripts/titles-raw.txt","r")
   rawtitles = [line.rstrip() for line in f]
   f.close()
 
