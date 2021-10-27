@@ -312,4 +312,3 @@ Also made sure 1090 database model entries, and there are 40 or so still missing
 Part of the chopmovies.py script is a for loop that will ping the API, I think that there are about 20 to go yet.
 The open database has info that I don't have saved in the database models, but the actor/director info isn't as good, so try to finish with the apathetic API first, then I'll go back and add the IMDB rating (e.g., 7.2/10), number of reviews from users info.
 http://www.omdbapi.com/
-
