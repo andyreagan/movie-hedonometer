@@ -6,62 +6,55 @@
 #
 # python chop.py data/count-of-monte-cristo.txt output french
 
-import codecs  # handle utf8
-import datetime
 import os
 import re
-import shutil
 import sys
+import json
 from pathlib import Path
 
-from labMTsimple.storyLab import *
 from numpy import array, floor, zeros
 from tqdm import tqdm
-
-sys.path.append("/home/prod/app")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
-from django.conf import settings
-from hedonometer.models import Movie
+from labMTsimple.storyLab import *
 from labMTsimple.speedy import *
 
-labMTsenti = sentiDict("LabMT", stopVal=0.0)
-
-# assume everything is in english
-lang = "english"
-labMT, labMTvector, labMTwordList = emotionFileReader(
-    stopval=0.0, lang=lang, returnVector=True
-)
+# sys.path.append("/home/prod/app")
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
+# from django.conf import settings
+# from hedonometer.models import Movie
 
 DATA_PATH = Path('data')
+# assume everything is in english
+labMT, labMTvector, labMTwordList = emotionFileReader(
+    stopval=0.0, lang="english", returnVector=True
+)
 
 
 def chopper(words, labMT, labMTvector, outfile: Path, minSize: int=1000) -> None:
-    # print("now splitting the text into chunks of size 1000")
-    # print("and printing those frequency vectors")
+    # tqdm.write("now splitting the text into chunks of size 1000")
+    # tqdm.write("and printing those frequency vectors")
     allFvec = []
     from numpy import floor
 
     for i in range(int(floor(len(words) / minSize))):
-        chunk = unicode("")
+        chunk = ""
         if i == int(floor(len(words) / minSize)) - 1:
             # take the rest
-            # print('last chunk')
-            # print('getting words ' + str(i*minSize) + ' through ' + str(len(words)-1))
-            for j in range(i * minSize, len(words) - 1):
-                chunk += words[j] + unicode(" ")
+            # tqdm.write(f'last chunk: getting words {i*minSize=} through {len(words)-1=}')
+            for j in range(int(i * minSize), int(len(words) - 1)):
+                chunk += words[j] + " "
         else:
-            # print('getting words ' + str(i*minSize) + ' through ' + str((i+1)*minSize))
-            for j in range(i * minSize, (i + 1) * minSize):
-                chunk += words[j] + unicode(" ")
-                # print(chunk[0:10])
+            # tqdm.write(f'getting words {i*minSize=} through {(i+1)*minSize=}')
+            for j in range(int(i * minSize), int((i + 1) * minSize)):
+                chunk += words[j] + " "
+                # tqdm.write(chunk[0:10])
         textValence, textFvec = emotion(chunk, labMT, shift=True, happsList=labMTvector)
-        # print(chunk)
-        # print('the valence of {0} part {1} is {2}'.format(rawbook,i,textValence))
+        # tqdm.write(chunk)
+        # tqdm.write('the valence of {0} part {1} is {2}'.format(rawbook,i,textValence))
         allFvec.append(textFvec)
 
-    f = open(outfile,"w")
     if len(allFvec) > 0:
-        print "writing out the file to {0}".format(outfile)
+        f = open(outfile, "w")
+        tqdm.write(f"writing out the file to {outfile=}")
         f.write('{0:.0f}'.format(allFvec[0][0]))
         for k in range(1,len(allFvec)):
             f.write(',{0:.0f}'.format(allFvec[k][0]))
@@ -70,77 +63,82 @@ def chopper(words, labMT, labMTvector, outfile: Path, minSize: int=1000) -> None
             f.write('{0:.0f}'.format(allFvec[0][i]))
             for k in range(1,len(allFvec)):
                 f.write(',{0:.0f}'.format(allFvec[k][i]))
-    f.close()
+        f.close()
     else:
-        print('"' * 40)
-        print(f"not saving {outfile}, len(allFvec) == {len(allFvec)}")
-        print('"' * 40)
+        tqdm.write('"' * 40)
+        tqdm.write(f"not saving {outfile=}, {len(allFvec)=}")
+        tqdm.write('"' * 40)
 
 
 def precomputeTimeseries(fullVec, labMT, labMTvector, outfile: Path) -> None:
     minWindows = 10
     timeseries = [0 for i in range(len(fullVec[0]) + 1)]
-    # print(len(timeseries))
+    # tqdm.write(f'{len(timeseries)=}')
 
     textFvec = [0 for j in range(len(fullVec))]
-    for i in range(0, minWindows / 2):
+    for i in range(0, int(minWindows / 2)):
         textFvec = [textFvec[j] + fullVec[j][i] for j in range(len(fullVec))]
-        # print("adding point {0}".format(i))
+        # tqdm.write("adding point {0}".format(i))
 
-    for i in range(minWindows / 2, minWindows):
-        # print("scoring")
+    for i in range(int(minWindows / 2), int(minWindows)):
+        # tqdm.write("scoring")
         stoppedVec = stopper(textFvec, labMTvector, labMTwordList, stopVal=2.0)
-        timeseries[i - minWindows / 2] = emotionV(stoppedVec, labMTvector)
-        # print("adding point {0}".format(i))
+        timeseries[int(i - minWindows / 2)] = emotionV(stoppedVec, labMTvector)
+        # tqdm.write("adding point {0}".format(i))
         textFvec = [textFvec[j] + fullVec[j][i] for j in range(len(fullVec))]
 
-    for i in range(minWindows, len(timeseries) - 1):
-        # print("scoring")
+    for i in range(int(minWindows), int(len(timeseries) - 1)):
+        # tqdm.write("scoring")
         stoppedVec = stopper(textFvec, labMTvector, labMTwordList, stopVal=2.0)
-        timeseries[i - minWindows / 2] = emotionV(stoppedVec, labMTvector)
-        # print("adding point {0}".format(i))
-        # print("removing point {0}".format(i-minWindows))
+        timeseries[int(i - minWindows / 2)] = emotionV(stoppedVec, labMTvector)
+        # tqdm.write("adding point {0}".format(i))
+        # tqdm.write("removing point {0}".format(i-minWindows))
         textFvec = [
             textFvec[j] + fullVec[j][i] - fullVec[j][i - minWindows]
             for j in range(len(fullVec))
         ]
 
-    for i in range(len(timeseries) - 1, len(timeseries) + minWindows / 2):
-        # print("scoring")
+    for i in range(len(timeseries) - 1, int(len(timeseries) + minWindows / 2)):
+        # tqdm.write("scoring")
         stoppedVec = stopper(textFvec, labMTvector, labMTwordList, stopVal=2.0)
-        timeseries[i - minWindows / 2] = emotionV(stoppedVec, labMTvector)
-        # print("removing point {0}".format(i-minWindows))
+        timeseries[int(i - minWindows / 2)] = emotionV(stoppedVec, labMTvector)
+        # tqdm.write("removing point {0}".format(i-minWindows))
         textFvec = [
             textFvec[j] - fullVec[j][i - minWindows] for j in range(len(fullVec))
         ]
 
-    # print("done")
-    # print(timeseries[0:11])
-    # print(timeseries[-11:])
+    # tqdm.write("done")
+    # tqdm.write(timeseries[0:11])
+    # tqdm.write(timeseries[-11:])
 
     outfile.write_text(",".join(["{0}".format(x) for x in timeseries]))
 
 
-def process(windowSizes: list = [2000], updateModel: bool=False) -> None:
+def process(movies: list, windowSizes: list = [2000]) -> None:
+    '''
+    Process the cleaned up movie scripts.
+
+    movies: list of objects that have three properties
+    '''
     # windowSizes = [500,1000,2000,5000,10000]
 
     # script_path = DATA_PATH / Path("scripts/scriptsClean")
     script_path = DATA_PATH / Path("scripts/html-cleaned")
-
+    for key in {"filename", "titleraw", "object"}:
+        assert key in movies[0]
 
     for movie in tqdm(movies):
-        print("filename:")
-        print(movie.filename)
+        if movie["object"] is not None:
+            movie["object"].exclude = False
+            movie["object"].excludeReason = ""
+            movie["object"].save()
+        tqdm.write(f'{movie["filename"]=}, {movie["titleraw"]=}')
 
-        print("titleraw:")
-        print(movie.titleraw)
-
-        filename = Path(movie.titleraw.replace(" ", "-").replace(".", "-") + ".txt")
+        filename = Path(movie["titleraw"].replace(" ", "-").replace(".", "-") + ".txt")
         full_path = (script_path / filename)
 
         if full_path.exists():
-            print("found file for title:")
-            print(movie.title)
+            tqdm.write(f"found file for {movie['filename']=}")
 
             raw_text = full_path.read_text()
 
@@ -165,32 +163,30 @@ def process(windowSizes: list = [2000], updateModel: bool=False) -> None:
                     klines.extend([i for j in range(len(tmpwords))])
 
             # avhapps = emotion(raw_text,labMT)
-            print("length of the original parse")
-            print(len(words))
-            print("length of the new parse")
-            print(len(kwords))
-            # print(len(klines))
-            # print(klines[0:20])
+            tqdm.write(f"length of the original parse {len(words)=}")
+            tqdm.write(f"length of the new parse {len(kwords)=}")
+            # tqdm.write(len(klines))
+            # tqdm.write(klines[0:20])
 
             for window in windowSizes:
-                print(window)
+                tqdm.write(f'{window=}')
                 window_path = DATA_PATH / Path("word-vectors") / Path(str(window))
 
-                # print(klines[0:(window/10)])
+                # tqdm.write(klines[0:(window/10)])
                 breaks = [
-                    klines[window / 10 * i]
+                    klines[int(floor(window / 10 * i))]
                     for i in range(int(floor(float(len(klines)) / window * 10)))
                 ]
                 breaks[0] = 0
-                # print([window/10*i for i in range(int(floor(float(len(klines))/window*10)))])
-                # print(breaks)
-                # print(len(breaks))
+                # tqdm.write([window/10*i for i in range(int(floor(float(len(klines))/window*10)))])
+                # tqdm.write(breaks)
+                # tqdm.write(len(breaks))
 
-                breaks_filename = Path(movie.filename + "-breaks.csv")
-                breaks_file = window_path / output_filename
+                breaks_filename = Path(movie["filename"] + "-breaks.csv")
+                breaks_file = window_path / breaks_filename
                 breaks_file.write_text(",".join(map(str, breaks)))
 
-                chopped_file = window_path / Path(movie.filename + ".csv"),
+                chopped_file = window_path / Path(movie["filename"] + ".csv")
 
                 chopper(
                     kwords,
@@ -200,11 +196,10 @@ def process(windowSizes: list = [2000], updateModel: bool=False) -> None:
                     minSize=window / 10,
                 )
 
-                f = chopped_file.read_text()
-                fullVec = [map(int, line.split(",")) for line in f.split("\n")]
+                fullVec = [list(map(int, line.split(","))) for line in chopped_file.read_text().split("\n")]
 
                 timeseries_path = DATA_PATH / Path("timeseries") / Path(str(window))
-                timeseries_filename = movie.filename + ".csv"
+                timeseries_filename = movie["filename"] + ".csv"
                 # some movies are blank
                 if len(fullVec) > 0:
                     if len(fullVec[0]) > 9:
@@ -215,23 +210,21 @@ def process(windowSizes: list = [2000], updateModel: bool=False) -> None:
                             (timeseries_path / timeseries_filename)
                         )
                 else:
-                    print("this movie is blank:")
-                    print(movie.title)
-                    if updateModel:
-                        movie.exclude = True
-                        movie.excludeReason = "movie blank"
-                        movie.save()
+                    tqdm.write(f'this movie is blank: {movie["titleraw"]}')
+                    if movie["object"] is not None:
+                        movie["object"].exclude = True
+                        movie["object"].excludeReason = "movie blank"
+                        movie["object"].save()
 
         else:
-            print("movie does not have a file at:")
-            print(full_path)
-            if updateModel:
-                movie.exclude = True
-                movie.excludeReason = "missing raw file in scriptsClean"
-                movie.save()
+            tqdm.write(f"movie does not have a file at: {full_path=}")
+            if movie["object"] is not None:
+                movie["object"].exclude = True
+                movie["object"].excludeReason = "missing raw file in scriptsClean"
+                movie["object"].save()
 
 
-def process_overallHapps(movies) -> None:
+def process_overallHapps(movies: list) -> None:
     '''
     Read the scripts raw, generate a vector in word-vectors/full for
     each script, with the ignoreWords removed (but 4-6 still included).
@@ -243,15 +236,14 @@ def process_overallHapps(movies) -> None:
     ignoreWords = ["camera", "cuts"]
     script_path = DATA_PATH / Path("scripts/html-cleaned")
 
+    for key in {"filename", "titleraw", "object"}:
+        assert key in movies[0]
+
     for movie in tqdm(movies):
 
-        print("filename:")
-        print(movie.filename)
+        tqdm.write(f'{movie["filename"]=}, {movie["titleraw"]=}')
 
-        print("titleraw:")
-        print(movie.titleraw)
-
-        filename = Path(movie.titleraw.replace(" ", "-").replace(".", "-") + ".txt")
+        filename = Path(movie["titleraw"].replace(" ", "-").replace(".", "-") + ".txt")
         full_path = (script_path / filename)
 
         lines = full_path.read_text().split("\n")
@@ -268,8 +260,7 @@ def process_overallHapps(movies) -> None:
             kwords.extend(tmpwords)
             klines.extend([i for j in range(len(tmpwords))])
 
-        print("length of the new parse")
-        print(len(kwords))
+        tqdm.write(f"length of the new parse {len(kwords)=}")
 
         rawtext = " ".join(kwords)
 
@@ -279,15 +270,17 @@ def process_overallHapps(movies) -> None:
 
         # this is just going to block the four nigg* and the specific movie words
         stoppedVec = stopper(
-            textFvec, labMTvector, labMTwordList, stopVal=0.0, ignore=(ignoreWords + movie.ignorewords.split(","))
+            textFvec, labMTvector, labMTwordList, stopVal=0.0, ignore=(ignoreWords + movie["ignoreWords"].split(","))
         )
         # add this minimally blocked list to the total
         # (since I want to only block these special words for some movies...)
         # a bit convoluted
         alltext_labMT_fVec += stoppedVec
 
-        (DATAPATH / Path("word-vectors/full") / Path(movie.filename + ".csv")).write_text(
-            ",".join(["{0:.0f}".format(x) for x in stoppedVec]))
+        (
+            DATA_PATH / Path("word-vectors/full") / Path(movie["filename"] + ".csv")
+        ).write_text(
+                ",".join(["{0:.0f}".format(x) for x in stoppedVec])
         )
 
         # fully stop the vec to compute the happiness
@@ -295,11 +288,12 @@ def process_overallHapps(movies) -> None:
             textFvec, labMTvector, labMTwordList, stopVal=2.0, ignore=ignoreWords
         )
         happs = emotionV(stoppedVec, labMTvector)
-        print(happs)
+        tqdm.write(f'{happs=}')
 
-        movie.length = len(kwords)
-        movie.happs = happs
-        movie.save()
+        if movie["object"] is not None:
+            movie["object"].length = len(kwords)
+            movie["object"].happs = happs
+            movie["object"].save()
 
     stoppedVec = stopper(
         alltext_labMT_fVec, labMTvector, labMTwordList, stopVal=2.0, ignore=ignoreWords
@@ -307,16 +301,19 @@ def process_overallHapps(movies) -> None:
     happs = emotionV(stoppedVec, labMTvector)
 
     # write out the word vector, not stopped except for the specific words
-    (DATAPATH / Path("word-vectors/full") / Path("all.csv")).write_text(
-        ",".join(["{0:.0f}".format(x) for x in alltext_labMT_fVec]))
+    (
+        DATA_PATH / Path("word-vectors/full") / Path("all.csv")
+    ).write_text(
+        ",".join(["{0:.0f}".format(x) for x in alltext_labMT_fVec])
     )
 
 
-def detect_line_type(movies) -> None:
+def detect_line_type(movies: list) -> None:
+    for key in {"filename"}:
+        assert key in movies[0]
+
     for movie in tqdm(movies):
-        m = movies[i]
-        # print(m.title)
-        f = codecs.open("raw/" + m.filename + ".txt.clean01", "r", "utf8")
+        f = open(DATA_PATH / Path("scripts/html-cleaned/" + movie["filename"] + ".txt"), "r")
         script = f.read()
         f.close()
         lines = script.split("\n")
@@ -341,7 +338,7 @@ def detect_line_type(movies) -> None:
                 continue
             bold = re.findall(r"<b>([ ]*)([A-Z\. \-'\(\)/:0-9\#]+)</b>", line)
             if len(bold) > 0:
-                # print(bold)
+                # tqdm.write(bold)
                 space = bold[0][0]
                 bold_spacings.append(len(space))
                 text = bold[0][1].rstrip(" ")
@@ -351,17 +348,17 @@ def detect_line_type(movies) -> None:
             line_match = re.findall(r"^([ ]*)(.*?)$", line)
             if len(line_match) > 0:
                 # if i<100:
-                #     print(line_match)
+                #     tqdm.write(line_match)
                 space = line_match[0][0]
                 general_spacings.append(len(space))
                 text = line_match[0][1].rstrip(" ")
                 types[i] = "a"
                 # lines[i] = space+text
 
-        # print(bold_spacings[:100])
-        # print(np.mean(bold_spacings))
-        # print(general_spacings[:100])
-        # print(np.mean(general_spacings))
+        # tqdm.write(bold_spacings[:100])
+        # tqdm.write(np.mean(bold_spacings))
+        # tqdm.write(general_spacings[:100])
+        # tqdm.write(np.mean(general_spacings))
         for i, line in enumerate(lines):
             blank = re.findall(r"^[ ]*$", line)
             if len(blank) > 0:
@@ -381,17 +378,19 @@ def detect_line_type(movies) -> None:
                 space = line_match[0][0]
                 if len(space) > np.mean(general_spacings):
                     types[i] = "d"
-        f = codecs.open("raw/" + m.filename + ".script", "w", "utf8")
+        f = open(DATA_PATH / Path("scripts/html-cleaned/" + movie["filename"] + ".script"), "w")
         f.write("\n".join([types[i].upper() + lines[i] for i in range(len(lines))]))
         f.close()
 
 
 
 if __name__ == "__main__":
-    folder = "data/scripts/html-cleaned"
     # get just one:
-    # movies = Movie.objects.filter(title="127 Hours")
-    movies = Movie.objects.all()
+    # movie_objects = Movie.objects.filter(title="127 Hours")
+    # movie_objects = Movie.objects.all()
+    # movies = [{"object": movie, "filename": movie.filename, "titleraw": movie.titleraw, "ignoreWords": movie.ignorewords} for movie in movie_objects]
+    imsdb_metadata = json.loads(Path("data/metadata/IMSDb-2021-10-26-parsed-02.json").read_text())
+    movies = [{"filename": movie["html_filename"], "titleraw": movie["html_filename"], "object": None, "ignoreWords": ""} for movie in imsdb_metadata][:3]
 
     process(movies)
     process_overallHapps(movies)

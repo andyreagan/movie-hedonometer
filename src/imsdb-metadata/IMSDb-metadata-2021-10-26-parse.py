@@ -68,8 +68,11 @@ def parse_02():
 def check_html_files_in_metadata():
     scripts = json.loads(Path("data/metadata/IMSDb-2021-10-26-parsed-02.json").read_text())
     filenames = [script.stem for script in  Path('data/scripts/html').iterdir()]
+    print(f'{len(filenames) =}')
     all_titles = [script['html_filename'] for script in scripts]
+    print(f'{len(all_titles)=}')
 
+    # should turn these into sets to do set math...
     for filename in filenames:
         if filename not in all_titles:
             print(filename)
