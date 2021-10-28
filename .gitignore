@@ -1,5 +1,10 @@
+# actual data folders
 /data/scripts/
 /data/word-vectors/
 /data/timeseries
+# links to them
 timeseries
 word-vectors
+labMT
+raw
+rawer
