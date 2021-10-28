@@ -18,7 +18,7 @@ def main():
                 print(f'{filename} found it, but too short: {len(table.get_text())}')
             text = table.get_text()
             if len(text.split('\n')) < 100:
-                text = re.sub("(\s{10,})", "\n\\1", text)
+                text = re.sub("(\s{6,})", "\n\\1", text)
             (Path('data/scripts/html-cleaned') / Path(filename + '.txt')).write_text(text)
         else:
             print(f'{filename}: did not find the source, found {len(tables)} sources')
